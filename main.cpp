@@ -6,6 +6,7 @@
 #include <thread>
 #include <vector>
 
+#include "render.h"
 #include "scene.h"
 #include "vec3.h"
 
@@ -26,6 +27,8 @@ int main() {
   }
 
   Scene scene{1.0, 0.6};
+  Camera camera;
+  Renderer renderer(scene, camera);
 
   bool running = true;
   double time = 0.0;
@@ -39,19 +42,27 @@ int main() {
     }
 
     // live terminal dimensions to calculate absolute center
-    int maxRows, maxCols;
-    getmaxyx(stdscr, maxRows, maxCols);
-    int centerY = maxRows / 2;
-    int centerX = maxCols / 2;
+    int max_rows, max_cols;
+    getmaxyx(stdscr, max_rows, max_cols);
+    renderer.resize(max_rows, max_cols);
 
     // clear in-memory render buffer (prevents flickering vs clear())
     erase();
 
-    // display help text
-    std::string title = "(Press 'q' to Quit)";
-    mvprintw(maxRows - 1, centerX - (title.length() / 2), "%s", title.c_str());
+    camera.update(time);
 
-    // mvaddch(y0, x0, '#');
+    for (int row = 0; row < max_rows; ++row) {
+      for (int col = 0; col < max_cols; ++col) {
+        char c = renderer.rendered_char(row, col);
+        mvaddch(row, col, c);
+      }
+    }
+
+    // display help text
+    int centerY = max_rows / 2;
+    int centerX = max_cols / 2;
+    std::string title = " (Press 'q' to Quit) ";
+    mvprintw(max_rows - 1, centerX - (title.length() / 2), "%s", title.c_str());
 
     // flush the off-screen buffer to terminal screen at once
     refresh();

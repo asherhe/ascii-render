@@ -4,6 +4,14 @@
 
 #include "vec3.h"
 
+//////// raymarching configuration ////////
+
+const int MAX_MARCH_STEPS = 48;
+const double MAX_MARCH_DIST = 10.0;
+const double SURFACE_DIST = 0.01;
+
+const double MARCH_MISS = NAN;
+
 //////// scene description ////////
 
 struct Scene {
@@ -14,16 +22,10 @@ struct Scene {
   double sdf(Vec3 p);
   // gradient of scene(p)
   Vec3 sdf_grad(Vec3 p);
+
+  // raymarch onto scene given ray origin and direction
+  double march(Vec3 o, Vec3 d);
 };
-
-//////// raymarching ////////
-
-const int MAX_MARCH_STEPS = 32;
-const double MAX_MARCH_DIST = 10.0;
-const double SURFACE_DIST = 0.01;
-
-// raymarch onto scene given ray origin and direction
-double march(Scene scene, Vec3 o, Vec3 d);
 
 //////// camera ////////
 struct Camera {
