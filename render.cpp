@@ -1,6 +1,29 @@
 #include "render.h"
 
 #include <algorithm>
+#include <cstdint>
+#include <cstring>
+
+double hash_double_mantissa(double d) {
+  d = (d == 0.0) ? 0.0 : d;
+
+  uint64_t bits;
+  std::memcpy(&bits, &d, sizeof(bits));
+
+  // mix bits using a SplitMix64 constant for uniform distribution
+  uint64_t h = (bits ^ (bits >> 30)) * 0xbf58476d1ce4e5b9ULL;
+  h = (h ^ (h >> 27)) * 0x94d049bb133111ebULL;
+  h ^= (h >> 31);
+
+  // set exponent to 1.0 (0x3FF) and use 52 mixed bits for mantissa
+  // result is in [1.0, 2.9)
+  uint64_t ieee_one = (0x3FFULL << 52) | (h & 0xFFFFFFFFFFFFFULL);
+
+  double result;
+  std::memcpy(&result, &ieee_one, sizeof(result));
+
+  return result - 1.0;  // Guaranteed in range [0.0, 1.0)
+}
 
 void Renderer::resize(size_t rows, size_t cols) {
   n_rows_ = rows;
@@ -24,7 +47,8 @@ double Renderer::render(Vec3 o, Vec3 d) {
   if (lambert < 0.0) lambert = 0.0;
   if (lambert > 1.0) lambert = 1.0;
 
-  double noise = real_dist(gen);
+  // double noise = real_dist(gen);
+  double noise = hash_double_mantissa(t);
 
   return lambert + 0.2 * noise;
 }

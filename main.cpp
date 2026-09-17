@@ -31,6 +31,7 @@ int main() {
   Renderer renderer(scene, camera);
 
   bool running = true;
+  bool paused = false;
   double time = 0.0;
 
   // main Render Loop
@@ -39,6 +40,9 @@ int main() {
     int ch = getch();
     if (ch == 'q' || ch == 'Q' || ch == 27) {
       running = false;
+    }
+    if (ch == ' ') {
+      paused = !paused;
     }
 
     // live terminal dimensions to calculate absolute center
@@ -69,7 +73,7 @@ int main() {
 
     // cap framerate (~30 FPS)
     std::this_thread::sleep_for(std::chrono::milliseconds(33));
-    time += 0.033;
+    if (!paused) time += 0.033;
   }
 
   // clean up NCurses environment before exiting
