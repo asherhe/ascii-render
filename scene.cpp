@@ -4,15 +4,15 @@
 
 double Scene::sdf(Vec3 p) {
   // distance from major radius along XY plane
-  double rad_plane = sqrt(p.x * p.x + p.z * p.z) - r_a;
+  double rad_plane = sqrt(v.x * v.x + v.z * v.z) - r_a;
   // distance to major radius ring
-  double rad_ring = sqrt(rad_plane * rad_plane + p.y * p.y);
+  double rad_ring = sqrt(rad_plane * rad_plane + v.y * v.y);
   return rad_ring - r_b;
 }
 
 Vec3 Scene::sdf_grad(Vec3 p) {
-  double rad_plane = sqrt(p.x * p.x + p.z * p.z);
-  return p.hadamard(Vec3(rad_plane - r_a, rad_plane, rad_plane - r_a));
+  double rad_plane = sqrt(v.x * v.x + v.z * v.z);
+  return v.hadamard(Vec3(rad_plane - r_a, rad_plane, rad_plane - r_a));
 }
 
 double march(Scene scene, Vec3 o, Vec3 d) {
@@ -27,4 +27,18 @@ double march(Scene scene, Vec3 o, Vec3 d) {
   }
 
   return t;
+}
+
+void Camera::update(double t) {
+  dir = Vec3(t + 0.84, -0.38, 2 * t - 0.42);
+  pos = cam2world_dir(Vec3(0, 0, -4));
+}
+
+Vec3 Camera::cam2world_dir(Vec3 v) {
+  double sp = sin(dir.x), sy = sin(dir.y), sr = sin(dir.z);
+  double cp = cos(dir.x), cy = cos(dir.y), cr = cos(dir.z);
+  return Vec3(
+      v.dot(Vec3(cr * cy, cr * sy * sp - cp * sr, sr * sp + cr * cp * sy)),
+      v.dot(Vec3(cy * sr, cr * cp + sr * sy * sp, cp * sr * sy - cr * sp)),
+      v.dot(Vec3(-sy, cy * sp, cy * cp)));
 }
