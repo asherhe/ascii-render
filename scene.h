@@ -10,7 +10,7 @@ const int MAX_MARCH_STEPS = 48;
 const double MAX_MARCH_DIST = 10.0;
 const double SURFACE_DIST = 0.01;
 
-const double MARCH_MISS = NAN;
+const double MARCH_MISS = -1.0;
 
 //////// scene description ////////
 

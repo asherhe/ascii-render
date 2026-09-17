@@ -79,10 +79,6 @@ char nearest_char(double upper, double lower) {
   char best_char = ' ';
   double best_dist = INFINITY;
 
-  // invert intensity because 0.0 is white
-  upper = 1.0 - upper;
-  lower = 1.0 - lower;
-
   for (int i = 0; i < NUM_CHARS; ++i) {
     double dup = CHAR_UPPER[i] - upper, dlo = CHAR_LOWER[i] - lower;
     double dist = dup * dup + dlo * dlo;
