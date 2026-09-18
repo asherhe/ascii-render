@@ -7,7 +7,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 find_package(Curses REQUIRED)
 
-add_executable(AsciiDonut main.cpp scene.cpp render.cpp)
+add_executable(AsciiDonut
+    src/main.cpp
+    src/scene.cpp
+    src/render.cpp
+)
 
 set_target_properties(AsciiDonut PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
