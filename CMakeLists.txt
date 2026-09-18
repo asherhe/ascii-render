@@ -20,3 +20,22 @@ set_target_properties(AsciiDonut PROPERTIES
 target_include_directories(AsciiDonut PRIVATE ${CURSES_INCLUDE_DIRS})
 
 target_link_libraries(AsciiDonut PRIVATE ${CURSES_LIBRARIES})
+
+# python venv configuration - requires uv
+
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+set(VENV_DIR "${CMAKE_BINARY_DIR}/.venv")
+set(VENV_PYTHON "${VENV_DIR}/bin/python")
+
+# create venv if it doesn't exist
+if(NOT EXISTS "${VENV_DIR}")
+    execute_process(
+        COMMAND uv venv "${VENV_DIR}"
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+    execute_process(
+        COMMAND uv pip install -r requirements.txt --python "${VENV_PYTHON}"
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+endif()
