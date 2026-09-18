@@ -3,7 +3,7 @@
 A terminal ASCII 3D renderer.
 
 <p align="center">
-  <img src="./img/donut.gif" alt="" />
+  <img src="./img/donut.png" alt="" />
 </p>
 
 ## Dependencies
