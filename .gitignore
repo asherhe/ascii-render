@@ -1,4 +1,5 @@
 bin/
+out/
 
 CMakeLists.txt.user
 CMakeCache.txt

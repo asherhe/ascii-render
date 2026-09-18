@@ -11,7 +11,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 
-def generate_font_header(font_path: str, char_set: str, font_size: int = 32, output_path: str = "../src/font.h"):
+def generate_font_header(font_path: str, char_set: str, font_size: int = 32, output_path: str = "../src/font.h", debug_glyph: bool = False):
   # load monospace font
   font = ImageFont.truetype(font_path, font_size)
   
@@ -25,11 +25,19 @@ def generate_font_header(font_path: str, char_set: str, font_size: int = 32, out
 
   mid = height // 2
 
+  if debug_glyph:
+    os.makedirs("./out/glyph", exist_ok=True)
+
   for c in char_set:
     # render character with white text on black background in greyscale
     img = Image.new("L", (width, height), color=0)
     draw = ImageDraw.Draw(img)
-    draw.text((0, 0), c, font=font, fill=255, anchor="lt")
+    draw.text((0, 0), c, font=font, fill=255, anchor="la")
+
+    # save glyph image using character hex code
+    if debug_glyph:
+      hex_code = f"{ord(c):x}"
+      img.save(f"./out/glyph/{hex_code}.png")
 
     # convert to float array normalized to [0, 1] per pixel
     arr = np.array(img, dtype=np.float64) / 255.0
@@ -102,8 +110,18 @@ if __name__ == "__main__":
     help="Character set to analyze",
     default=" !\"#$%&'*+,-.:;=?@~",
   )
+  parser.add_argument(
+    "--debug-glyph",
+    help="Output font glyph images to ./glyphs",
+    action="store_true",
+  )
   args = parser.parse_args()
 
   output_file = os.path.join(script_dir, "../src/font.h")
 
-  generate_font_header(args.font, args.chars, output_path=output_file)
+  generate_font_header(
+    font_path=args.font,
+    char_set=args.chars,
+    output_path=output_file,
+    debug_glyph=args.debug_glyph
+  )
