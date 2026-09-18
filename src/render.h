@@ -50,5 +50,5 @@ class Renderer {
 };
 
 // find the character from CHAR_SET that most closely approximates the
-// brightness profile of the given light intensities.
+// font profile of the given light intensities.
 char nearest_char(double upper, double lower);

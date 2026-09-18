@@ -2,8 +2,8 @@
 USAGE:
     python ./scripts/font_generate.py --font path/to/font.ttf --chars "abcdef"
 
-Reads a monospace .ttf font file and measures upper and lower half pixel counts 
-for each provided character to generate a C++ header file at ../src/font.h.
+Reads a monospace .ttf font file and generates a font profile for each provided
+character in a C++ header file at ../src/font.h.
 """
 
 import argparse
@@ -99,7 +99,7 @@ if __name__ == "__main__":
   script_dir = os.path.dirname(os.path.abspath(__file__))
 
   # setup command line argument parsing
-  parser = argparse.ArgumentParser(description="Generate header file with font pixel density features")
+  parser = argparse.ArgumentParser(description="Generate a font profile header file")
   parser.add_argument(
     "--font",
     help="Path to monospace .ttf font file",
