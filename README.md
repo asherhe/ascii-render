@@ -1,10 +1,8 @@
 # ASCII Renderer
 
-A terminal ASCII 3D renderer.
+<img src="./img/donut.png" align="right" width="40%" />
 
-<p align="center">
-  <img src="./img/donut.png" alt="" />
-</p>
+A terminal ASCII 3D renderer.
 
 ## Dependencies
 
