@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <cstring>
 
+#include "font.h"
+
 double hash_double_mantissa(double d) {
   d = (d == 0.0) ? 0.0 : d;
 
@@ -50,7 +52,7 @@ double Renderer::render(Vec3 o, Vec3 d) {
   // double noise = real_dist(gen);
   double noise = hash_double_mantissa(t);
 
-  return lambert + 0.2 * noise;
+  return lambert + 0.3 * noise;
 }
 
 double Renderer::render(double row, double col) {
