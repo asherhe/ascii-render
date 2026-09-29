@@ -26,8 +26,16 @@ struct App {
 void sync_canvas_size() {
   double width, height;
   emscripten_get_element_css_size("#canvas", &width, &height);
-  emscripten_set_canvas_element_size("#canvas", static_cast<int>(width),
-                                     static_cast<int>(height));
+  int canvas_width = static_cast<int>(width);
+  int canvas_height = static_cast<int>(height);
+  static int previous_width = 0;
+  static int previous_height = 0;
+
+  if (canvas_width != previous_width || canvas_height != previous_height) {
+    emscripten_set_canvas_element_size("#canvas", canvas_width, canvas_height);
+    previous_width = canvas_width;
+    previous_height = canvas_height;
+  }
 }
 
 void sync_curses_size() {
@@ -120,6 +128,10 @@ void render_frame(App &app) {
   if (app.paused)
     title = " (PAUSED) ";
   mvprintw(max_rows - 1, centerX - (title.length() / 2), "%s", title.c_str());
+
+  if (app.paused) {
+    touchwin(stdscr);
+  }
 
   // flush the off-screen buffer to terminal screen at once
   refresh();
