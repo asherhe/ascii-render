@@ -60,7 +60,7 @@ void init_curses() {
   sync_canvas_size();
 #endif
 #ifdef __EMSCRIPTEN__
-  pdc_sdl_render_mode = PDC_SDL_RENDER_SOLID;
+  pdc_sdl_render_mode = PDC_SDL_RENDER_BLENDED;
 #endif
   // ncurses initialization
   initscr();
