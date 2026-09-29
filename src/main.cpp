@@ -38,14 +38,17 @@ void init_curses() {
 }
 
 void render_frame(App &app) {
-  // 'q' or ESC to exit
   int ch = getch();
-  if (ch == 'q' || ch == 'Q' || ch == 27) {
-    app.running = false;
-  }
+  // space to pause
   if (ch == ' ') {
     app.paused = !app.paused;
   }
+#ifndef __EMSCRIPTEN__
+  // 'q' or ESC to exit
+  if (ch == 'q' || ch == 'Q' || ch == 27) {
+    app.running = false;
+  }
+#endif
 
   if (!app.running) {
     return;
@@ -68,10 +71,12 @@ void render_frame(App &app) {
     }
   }
 
+#ifndef __EMSCRIPTEN__
   // display help text
   int centerX = max_cols / 2;
   std::string title = " (Press 'q' to quit) ";
   mvprintw(max_rows - 1, centerX - (title.length() / 2), "%s", title.c_str());
+#endif
 
   // flush the off-screen buffer to terminal screen at once
   refresh();
