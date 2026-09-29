@@ -2,7 +2,7 @@
 
 A terminal ASCII 3D renderer.
 
-<img src="./img/donut.png" align="center" width="80%" />
+![ASCII donut renderer output](./img/donut.png)
 
 ## Dependencies
 
@@ -43,6 +43,7 @@ The native CMake configuration creates a `.venv` with `uv` and installs the Pyth
 Install and activate the [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html). The `EMSDK` environment variable must point to the SDK directory. In PowerShell, activate it with:
 
 ```powershell
+& "$env:EMSDK\emsdk.ps1" activate latest
 & "$env:EMSDK\emsdk_env.ps1"
 ```
 

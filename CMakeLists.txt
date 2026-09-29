@@ -39,15 +39,32 @@ if(EMSCRIPTEN OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     )
     FetchContent_MakeAvailable(pdcursesmod)
 
-    target_link_libraries(AsciiDonut PRIVATE sdl2_pdcurses)
+    target_link_libraries(AsciiDonut PRIVATE sdl2_pdcursesstatic)
     target_include_directories(AsciiDonut PRIVATE ${pdcursesmod_SOURCE_DIR})
     target_compile_options(AsciiDonut PRIVATE -sUSE_SDL=2)
-    target_compile_options(sdl2_pdcurses PRIVATE -sUSE_SDL=2)
-    get_target_property(PDC_SDL_LINK_LIBRARIES sdl2_pdcurses LINK_LIBRARIES)
+    target_compile_options(sdl2_pdcursesstatic PRIVATE -sUSE_SDL=2)
+    get_target_property(PDC_SDL_LINK_LIBRARIES sdl2_pdcursesstatic LINK_LIBRARIES)
     list(REMOVE_ITEM PDC_SDL_LINK_LIBRARIES "dl")
-    set_target_properties(sdl2_pdcurses PROPERTIES
+    set_target_properties(sdl2_pdcursesstatic PROPERTIES
         LINK_LIBRARIES "${PDC_SDL_LINK_LIBRARIES}"
     )
+    get_property(PDC_SDL_TARGETS DIRECTORY "${pdcursesmod_SOURCE_DIR}/sdl2"
+        PROPERTY BUILDSYSTEM_TARGETS
+    )
+    foreach(PDC_SDL_TARGET IN LISTS PDC_SDL_TARGETS)
+        get_target_property(PDC_SDL_TARGET_TYPE ${PDC_SDL_TARGET} TYPE)
+        if(NOT PDC_SDL_TARGET_TYPE STREQUAL "INTERFACE_LIBRARY")
+            target_compile_options(${PDC_SDL_TARGET} PRIVATE -sUSE_SDL=2)
+            target_link_options(${PDC_SDL_TARGET} PRIVATE -sUSE_SDL=2)
+            get_target_property(PDC_SDL_TARGET_LINK_LIBRARIES
+                ${PDC_SDL_TARGET} LINK_LIBRARIES
+            )
+            list(REMOVE_ITEM PDC_SDL_TARGET_LINK_LIBRARIES "dl")
+            set_target_properties(${PDC_SDL_TARGET} PROPERTIES
+                LINK_LIBRARIES "${PDC_SDL_TARGET_LINK_LIBRARIES}"
+            )
+        endif()
+    endforeach()
     target_link_options(AsciiDonut PRIVATE
         -sUSE_SDL=2
         -sALLOW_MEMORY_GROWTH=1
