@@ -2,6 +2,8 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <emscripten/html5.h>
+#include <pdcsdl.h>
 #endif
 
 #include <chrono>
@@ -20,7 +22,46 @@ struct App {
   double time = 0.0;
 };
 
+#ifdef __EMSCRIPTEN__
+void sync_canvas_size() {
+  double width, height;
+  emscripten_get_element_css_size("#canvas", &width, &height);
+  int canvas_width = static_cast<int>(width);
+  int canvas_height = static_cast<int>(height);
+  static int previous_width = 0;
+  static int previous_height = 0;
+
+  if (canvas_width != previous_width || canvas_height != previous_height) {
+    emscripten_set_canvas_element_size("#canvas", canvas_width, canvas_height);
+    previous_width = canvas_width;
+    previous_height = canvas_height;
+  }
+}
+
+void sync_curses_size() {
+  int width, height;
+  emscripten_get_canvas_element_size("#canvas", &width, &height);
+
+  int rows = height / pdc_fheight;
+  int cols = width / pdc_fwidth;
+  rows = rows > 0 ? rows : 1;
+  cols = cols > 0 ? cols : 1;
+  int current_rows, current_cols;
+  getmaxyx(stdscr, current_rows, current_cols);
+
+  if (rows != current_rows || cols != current_cols) {
+    resize_term(rows, cols);
+  }
+}
+#endif
+
 void init_curses() {
+#ifdef __EMSCRIPTEN__
+  sync_canvas_size();
+#endif
+#ifdef __EMSCRIPTEN__
+  pdc_sdl_render_mode = PDC_SDL_RENDER_BLENDED;
+#endif
   // ncurses initialization
   initscr();
   cbreak();              // disable line buffering (read keys immediately)
@@ -28,6 +69,9 @@ void init_curses() {
   curs_set(0);           // hide terminal cursor
   nodelay(stdscr, TRUE); // non-blocking input (for smooth animation loop)
   keypad(stdscr, TRUE);  // ennable arrow/function key processing
+#ifdef __EMSCRIPTEN__
+  sync_curses_size();
+#endif
 
   // enable colors if terminal supports it
   if (has_colors()) {
@@ -38,6 +82,10 @@ void init_curses() {
 }
 
 void render_frame(App &app) {
+#ifdef __EMSCRIPTEN__
+  sync_canvas_size();
+  sync_curses_size();
+#endif
   int ch = getch();
   // space to pause
   if (ch == ' ') {
@@ -83,6 +131,10 @@ void render_frame(App &app) {
   if (app.paused)
     title = " (PAUSED) ";
   mvprintw(max_rows - 1, centerX - (title.length() / 2), "%s", title.c_str());
+
+  if (app.paused) {
+    touchwin(stdscr);
+  }
 
   // flush the off-screen buffer to terminal screen at once
   refresh();
