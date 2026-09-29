@@ -25,6 +25,9 @@ if(EMSCRIPTEN OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     set(WEB_DIST_DIR "${CMAKE_BINARY_DIR}/site")
     set(WEB_SHELL_FILE "${CMAKE_SOURCE_DIR}/web/src/index.html")
     set(WEB_STYLE_FILE "${CMAKE_SOURCE_DIR}/web/src/style.css")
+    set(WEB_FONT_FILE
+        "${CMAKE_SOURCE_DIR}/scripts/fonts/comic_mono/ComicMono.ttf"
+    )
 
     set(CMAKE_INSTALL_PREFIX
         "${CMAKE_BINARY_DIR}/install"
@@ -34,7 +37,7 @@ if(EMSCRIPTEN OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     set(PDC_SDL2_BUILD ON CACHE BOOL "Build SDL2 project" FORCE)
     set(PDC_SDL2_DEPS_BUILD OFF CACHE BOOL "Use Emscripten's SDL2 port" FORCE)
     set(PDC_GL_BUILD OFF CACHE BOOL "Build OpenGL project" FORCE)
-    set(PDC_WIDE OFF CACHE BOOL "Build narrow-character PDCurses" FORCE)
+    set(PDC_WIDE ON CACHE BOOL "Build wide-character PDCurses" FORCE)
 
     FetchContent_Declare(
         pdcursesmod
@@ -45,8 +48,19 @@ if(EMSCRIPTEN OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
 
     target_link_libraries(AsciiDonut PRIVATE sdl2_pdcursesstatic)
     target_include_directories(AsciiDonut PRIVATE ${pdcursesmod_SOURCE_DIR})
-    target_compile_options(AsciiDonut PRIVATE -sUSE_SDL=2)
-    target_compile_options(sdl2_pdcursesstatic PRIVATE -sUSE_SDL=2)
+    target_compile_definitions(AsciiDonut PRIVATE
+        PDC_WIDE
+        PDC_FONT_PATH=\"/ComicMono.ttf\"
+    )
+    target_compile_definitions(sdl2_pdcursesstatic PRIVATE
+        PDC_WIDE
+        PDC_FONT_PATH=\"/ComicMono.ttf\"
+    )
+    target_compile_options(AsciiDonut PRIVATE -sUSE_SDL=2 -sUSE_SDL_TTF=2)
+    target_compile_options(sdl2_pdcursesstatic PRIVATE
+        -sUSE_SDL=2
+        -sUSE_SDL_TTF=2
+    )
     get_target_property(PDC_SDL_LINK_LIBRARIES sdl2_pdcursesstatic LINK_LIBRARIES)
     list(REMOVE_ITEM PDC_SDL_LINK_LIBRARIES "dl")
     set_target_properties(sdl2_pdcursesstatic PROPERTIES
@@ -58,8 +72,14 @@ if(EMSCRIPTEN OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     foreach(PDC_SDL_TARGET IN LISTS PDC_SDL_TARGETS)
         get_target_property(PDC_SDL_TARGET_TYPE ${PDC_SDL_TARGET} TYPE)
         if(NOT PDC_SDL_TARGET_TYPE STREQUAL "INTERFACE_LIBRARY")
-            target_compile_options(${PDC_SDL_TARGET} PRIVATE -sUSE_SDL=2)
-            target_link_options(${PDC_SDL_TARGET} PRIVATE -sUSE_SDL=2)
+            target_compile_options(${PDC_SDL_TARGET} PRIVATE
+                -sUSE_SDL=2
+                -sUSE_SDL_TTF=2
+            )
+            target_link_options(${PDC_SDL_TARGET} PRIVATE
+                -sUSE_SDL=2
+                -sUSE_SDL_TTF=2
+            )
             get_target_property(PDC_SDL_TARGET_LINK_LIBRARIES
                 ${PDC_SDL_TARGET} LINK_LIBRARIES
             )
@@ -71,7 +91,9 @@ if(EMSCRIPTEN OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     endforeach()
     target_link_options(AsciiDonut PRIVATE
         -sUSE_SDL=2
+        -sUSE_SDL_TTF=2
         -sALLOW_MEMORY_GROWTH=1
+        "--preload-file=${WEB_FONT_FILE}@/ComicMono.ttf"
         "--shell-file=${WEB_SHELL_FILE}"
     )
     set_target_properties(AsciiDonut PROPERTIES
