@@ -2,6 +2,8 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <emscripten/html5.h>
+#include <pdcsdl.h>
 #endif
 
 #include <chrono>
@@ -20,7 +22,35 @@ struct App {
   double time = 0.0;
 };
 
+#ifdef __EMSCRIPTEN__
+void sync_canvas_size() {
+  double width, height;
+  emscripten_get_element_css_size("#canvas", &width, &height);
+  emscripten_set_canvas_element_size("#canvas", static_cast<int>(width),
+                                     static_cast<int>(height));
+}
+
+void sync_curses_size() {
+  double width, height;
+  emscripten_get_element_css_size("#canvas", &width, &height);
+
+  int rows = static_cast<int>(height) / pdc_fheight;
+  int cols = static_cast<int>(width) / pdc_fwidth;
+  rows = rows > 0 ? rows : 1;
+  cols = cols > 0 ? cols : 1;
+  int current_rows, current_cols;
+  getmaxyx(stdscr, current_rows, current_cols);
+
+  if (rows != current_rows || cols != current_cols) {
+    resize_term(rows, cols);
+  }
+}
+#endif
+
 void init_curses() {
+#ifdef __EMSCRIPTEN__
+  sync_canvas_size();
+#endif
   // ncurses initialization
   initscr();
   cbreak();              // disable line buffering (read keys immediately)
@@ -28,6 +58,9 @@ void init_curses() {
   curs_set(0);           // hide terminal cursor
   nodelay(stdscr, TRUE); // non-blocking input (for smooth animation loop)
   keypad(stdscr, TRUE);  // ennable arrow/function key processing
+#ifdef __EMSCRIPTEN__
+  sync_curses_size();
+#endif
 
   // enable colors if terminal supports it
   if (has_colors()) {
@@ -38,6 +71,10 @@ void init_curses() {
 }
 
 void render_frame(App &app) {
+#ifdef __EMSCRIPTEN__
+  sync_canvas_size();
+  sync_curses_size();
+#endif
   int ch = getch();
   // space to pause
   if (ch == ' ') {
