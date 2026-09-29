@@ -42,6 +42,12 @@ if(EMSCRIPTEN OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     target_link_libraries(AsciiDonut PRIVATE sdl2_pdcurses)
     target_include_directories(AsciiDonut PRIVATE ${pdcursesmod_SOURCE_DIR})
     target_compile_options(AsciiDonut PRIVATE -sUSE_SDL=2)
+    target_compile_options(sdl2_pdcurses PRIVATE -sUSE_SDL=2)
+    get_target_property(PDC_SDL_LINK_LIBRARIES sdl2_pdcurses LINK_LIBRARIES)
+    list(REMOVE_ITEM PDC_SDL_LINK_LIBRARIES "dl")
+    set_target_properties(sdl2_pdcurses PROPERTIES
+        LINK_LIBRARIES "${PDC_SDL_LINK_LIBRARIES}"
+    )
     target_link_options(AsciiDonut PRIVATE
         -sUSE_SDL=2
         -sALLOW_MEMORY_GROWTH=1
@@ -88,25 +94,27 @@ endif()
 # ==============================================================================
 # Python venv configuration - requires uv
 # ==============================================================================
-find_package(Python3 REQUIRED COMPONENTS Interpreter)
+if(NOT (EMSCRIPTEN OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten"))
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
-set(VENV_DIR "${CMAKE_BINARY_DIR}/.venv")
+    set(VENV_DIR "${CMAKE_BINARY_DIR}/.venv")
 
-# Adjust executable path according to OS platform
-if(WIN32)
-    set(VENV_PYTHON "${VENV_DIR}/Scripts/python.exe")
-else()
-    set(VENV_PYTHON "${VENV_DIR}/bin/python")
-endif()
+    # Adjust executable path according to OS platform
+    if(WIN32)
+        set(VENV_PYTHON "${VENV_DIR}/Scripts/python.exe")
+    else()
+        set(VENV_PYTHON "${VENV_DIR}/bin/python")
+    endif()
 
-# Create venv if it doesn't exist
-if(NOT EXISTS "${VENV_DIR}")
-    execute_process(
-        COMMAND uv venv "${VENV_DIR}"
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    )
-    execute_process(
-        COMMAND uv pip install -r requirements.txt --python "${VENV_PYTHON}"
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    )
+    # Create venv if it doesn't exist
+    if(NOT EXISTS "${VENV_DIR}")
+        execute_process(
+            COMMAND uv venv "${VENV_DIR}"
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        )
+        execute_process(
+            COMMAND uv pip install -r requirements.txt --python "${VENV_PYTHON}"
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        )
+    endif()
 endif()

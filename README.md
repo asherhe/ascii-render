@@ -8,45 +8,67 @@ A terminal ASCII 3D renderer.
 
 ### Build and runtime
 
-- CMake 3.10 or newer
+- CMake 3.16 or newer
 - Ninja 1.10 or newer
-- A C++ compiler with C++11 support
-- A Curses implementation and its development files (`ncurses` on most Linux and macOS systems, PDCurses on Windows)
-- Python 3
-- [uv](https://docs.astral.sh/uv/) (used by CMake to create the Python virtual environment)
-- Emscripten (if building for web)
+- Internet access for CMake to fetch PDCursesMod on Windows and Emscripten
 
-## Setup and build
+## Native builds
 
-Install `uv` using its [official instructions](https://docs.astral.sh/uv/getting-started/installation/).
+Native builds require a C++11 compiler, a system Curses development package (`ncurses` on Linux and macOS), Python 3, and [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
-From the repository root, run:
+### Linux and macOS
+
+Install the platform's `ncurses` development package, then run from the repository root:
 
 ```sh
-cmake -S . -B build -G Ninja
+cmake -S . -B build-posix -G Ninja
+cmake --build build-posix
+./build-posix/bin/AsciiDonut
 ```
 
-The CMake configuration creates a `.venv` with `uv` and installs all dependencies for Pythons cripts.
+### Windows
 
-To build, run
-
-```sh
-cmake --build build
-```
-
-The compiled executable is written to `build/bin/AsciiDonut` (with `.exe` on Windows).
-
-Run it with:
-
-```sh
-./build/bin/AsciiDonut
-```
-
-On Windows, use the executable path appropriate for your shell, for example:
+Windows uses the PDCursesMod Win32 console backend:
 
 ```powershell
-.\build\bin\AsciiDonut.exe
+cmake -S . -B build-windows -G Ninja
+cmake --build build-windows
+.\build-windows\bin\AsciiDonut.exe
 ```
+
+The native CMake configuration creates a `.venv` with `uv` and installs the Python dependencies used by the font profile generator.
+
+## Emscripten build
+
+Install and activate the [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html). The `EMSDK` environment variable must point to the SDK directory. In PowerShell, activate it with:
+
+```powershell
+& "$env:EMSDK\emsdk_env.ps1"
+```
+
+From the repository root, configure and build the SDL2/PDCurses web target:
+
+```powershell
+emcmake cmake -S . -B build-web -G Ninja
+cmake --build build-web
+```
+
+The generated files are written to `build-web/bin/`, including `AsciiDonut.html`, `AsciiDonut.js`, and `AsciiDonut.wasm`. Serve that directory over HTTP rather than opening the HTML file directly:
+
+```powershell
+python -m http.server 8000 --directory build-web\bin
+```
+
+Open <http://localhost:8000/AsciiDonut.html> in a browser.
+
+If `emcmake` is not on `PATH`, use the toolchain path supplied by `EMSDK` directly:
+
+```powershell
+cmake -S . -B build-web -G Ninja -DCMAKE_TOOLCHAIN_FILE="$env:EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+cmake --build build-web
+```
+
+The web build uses PDCursesMod's SDL2 backend and does not create the native Python virtual environment.
 
 ## Controls
 
