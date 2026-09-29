@@ -1,16 +1,26 @@
 #include <curses.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #include <chrono>
-#include <cmath>
 #include <string>
 #include <thread>
-#include <vector>
 
 #include "render.h"
 #include "scene.h"
-#include "vec3.h"
 
-int main() {
+struct App {
+  Scene scene{1.0, 0.6};
+  Camera camera;
+  Renderer renderer{scene, camera};
+  bool running = true;
+  bool paused = false;
+  double time = 0.0;
+};
+
+void init_curses() {
   // ncurses initialization
   initscr();
   cbreak();              // disable line buffering (read keys immediately)
@@ -25,60 +35,81 @@ int main() {
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
     attron(COLOR_PAIR(1));
   }
+}
 
-  Scene scene{1.0, 0.6};
-  Camera camera;
-  Renderer renderer(scene, camera);
+void render_frame(App &app) {
+  // 'q' or ESC to exit
+  int ch = getch();
+  if (ch == 'q' || ch == 'Q' || ch == 27) {
+    app.running = false;
+  }
+  if (ch == ' ') {
+    app.paused = !app.paused;
+  }
 
-  bool running = true;
-  bool paused = false;
-  double time = 0.0;
+  if (!app.running) {
+    return;
+  }
 
+  // live terminal dimensions to calculate absolute center
+  int max_rows, max_cols;
+  getmaxyx(stdscr, max_rows, max_cols);
+  app.renderer.resize(max_rows, max_cols);
+
+  // clear in-memory render buffer (prevents flickering vs clear())
+  erase();
+
+  app.camera.update(app.time);
+
+  for (int row = 0; row < max_rows; ++row) {
+    for (int col = 0; col < max_cols; ++col) {
+      char c = app.renderer.rendered_char(row, col);
+      mvaddch(row, col, c);
+    }
+  }
+
+  // display help text
+  int centerX = max_cols / 2;
+  std::string title = " (Press 'q' to quit) ";
+  mvprintw(max_rows - 1, centerX - (title.length() / 2), "%s", title.c_str());
+
+  // flush the off-screen buffer to terminal screen at once
+  refresh();
+
+  if (!app.paused) {
+    app.time += 0.033;
+  }
+}
+
+#ifdef __EMSCRIPTEN__
+void render_frame_callback(void *arg) {
+  App &app = *static_cast<App *>(arg);
+  render_frame(app);
+  if (!app.running) {
+    endwin();
+    emscripten_cancel_main_loop();
+  }
+}
+#endif
+
+int main() {
+  init_curses();
+  App app;
+
+#ifdef __EMSCRIPTEN__
+  emscripten_set_main_loop_arg(render_frame_callback, &app, 30, 1);
+#else
   // main Render Loop
-  while (running) {
-    // 'q' or ESC to exit
-    int ch = getch();
-    if (ch == 'q' || ch == 'Q' || ch == 27) {
-      running = false;
+  while (app.running) {
+    render_frame(app);
+    if (app.running) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(33));
     }
-    if (ch == ' ') {
-      paused = !paused;
-    }
-
-    // live terminal dimensions to calculate absolute center
-    int max_rows, max_cols;
-    getmaxyx(stdscr, max_rows, max_cols);
-    renderer.resize(max_rows, max_cols);
-
-    // clear in-memory render buffer (prevents flickering vs clear())
-    erase();
-
-    camera.update(time);
-
-    for (int row = 0; row < max_rows; ++row) {
-      for (int col = 0; col < max_cols; ++col) {
-        char c = renderer.rendered_char(row, col);
-        mvaddch(row, col, c);
-      }
-    }
-
-    // display help text
-    int centerY = max_rows / 2;
-    int centerX = max_cols / 2;
-    std::string title = " (Press 'q' to Quit) ";
-    mvprintw(max_rows - 1, centerX - (title.length() / 2), "%s", title.c_str());
-
-    // flush the off-screen buffer to terminal screen at once
-    refresh();
-
-    // cap framerate (~30 FPS)
-    std::this_thread::sleep_for(std::chrono::milliseconds(33));
-    if (!paused)
-      time += 0.033;
   }
 
   // clean up NCurses environment before exiting
   endwin();
+#endif
 
   return 0;
 }
