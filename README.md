@@ -9,8 +9,9 @@ A terminal ASCII 3D renderer.
 ### Build and runtime
 
 - CMake 3.10 or newer
+- Ninja 1.10 or newer
 - A C++ compiler with C++11 support
-- A Curses implementation and its development files (`ncurses` on most Linux and macOS systems)
+- A Curses implementation and its development files (`ncurses` on most Linux and macOS systems, PDCurses on Windows)
 - Python 3
 - [uv](https://docs.astral.sh/uv/) (used by CMake to create the Python virtual environment)
 
@@ -18,14 +19,19 @@ A terminal ASCII 3D renderer.
 
 Install `uv` using its [official instructions](https://docs.astral.sh/uv/getting-started/installation/).
 
-From the repository root:
+From the repository root, run:
 
 ```sh
-cmake -S . -B build
-cmake --build build
+cmake -S . -B build -G Ninja
 ```
 
 The CMake configuration creates a `.venv` with `uv` and installs all dependencies for Pythons cripts.
+
+To build, run
+
+```sh
+cmake --build build
+```
 
 The compiled executable is written to `build/bin/AsciiDonut` (with `.exe` on Windows).
 

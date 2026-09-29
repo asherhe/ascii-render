@@ -1,4 +1,4 @@
-#include <ncurses.h>
+#include <curses.h>
 
 #include <chrono>
 #include <cmath>
@@ -13,11 +13,11 @@
 int main() {
   // ncurses initialization
   initscr();
-  cbreak();               // disable line buffering (read keys immediately)
-  noecho();               // don't echo input keys to screen
-  curs_set(0);            // hide terminal cursor
-  nodelay(stdscr, TRUE);  // non-blocking input (for smooth animation loop)
-  keypad(stdscr, TRUE);   // ennable arrow/function key processing
+  cbreak();              // disable line buffering (read keys immediately)
+  noecho();              // don't echo input keys to screen
+  curs_set(0);           // hide terminal cursor
+  nodelay(stdscr, TRUE); // non-blocking input (for smooth animation loop)
+  keypad(stdscr, TRUE);  // ennable arrow/function key processing
 
   // enable colors if terminal supports it
   if (has_colors()) {
@@ -73,7 +73,8 @@ int main() {
 
     // cap framerate (~30 FPS)
     std::this_thread::sleep_for(std::chrono::milliseconds(33));
-    if (!paused) time += 0.033;
+    if (!paused)
+      time += 0.033;
   }
 
   // clean up NCurses environment before exiting
