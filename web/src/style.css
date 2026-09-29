@@ -1,0 +1,96 @@
+:root {
+  color-scheme: dark;
+  --ink: #f4f1e8;
+  --muted: #a8b0a5;
+  --line: #38463d;
+  --accent: #b8e986;
+  --panel: #121a16;
+  --page: #080c0a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: radial-gradient(circle at top, #1a2a20 0, var(--page) 48rem);
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.page-shell {
+  width: min(100% - 2rem, 72rem);
+  margin: 0 auto;
+  padding: 4rem 0 3rem;
+}
+
+.site-header {
+  margin-bottom: 2rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--accent);
+  font-family: "Courier New", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.5rem, 8vw, 5.5rem);
+  font-weight: 400;
+  line-height: 0.95;
+}
+
+.status-line,
+.controls {
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.renderer-frame {
+  overflow: auto;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 30%);
+}
+
+canvas.emscripten {
+  display: block;
+  width: 100%;
+  min-width: 640px;
+  min-height: 480px;
+  background: #000;
+  image-rendering: pixelated;
+}
+
+.controls {
+  margin: 1rem 0 0;
+  font-family: "Courier New", monospace;
+  font-size: 0.875rem;
+}
+
+kbd {
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--line);
+  color: var(--accent);
+  font: inherit;
+}
+
+@media (max-width: 42rem) {
+  .page-shell {
+    padding-top: 2.5rem;
+  }
+
+  canvas.emscripten {
+    min-height: 360px;
+  }
+}

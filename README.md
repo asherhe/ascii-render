@@ -54,13 +54,13 @@ emcmake cmake -S . -B build-web -G Ninja
 cmake --build build-web
 ```
 
-The generated files are written to `build-web/bin/`, including `AsciiDonut.html`, `AsciiDonut.js`, and `AsciiDonut.wasm`. Serve that directory over HTTP rather than opening the HTML file directly:
+The generated website files are written to `build-web/site/` as `index.html`, `index.js`, `index.wasm`, and `style.css`. Serve that directory over HTTP rather than opening the HTML file directly:
 
 ```powershell
-python -m http.server 8000 --directory build-web\bin
+python -m http.server 8000 --directory build-web\site
 ```
 
-Open <http://localhost:8000/AsciiDonut.html> in a browser.
+Open <http://localhost:8000/> in a browser.
 
 If `emcmake` is not on `PATH`, use the toolchain path supplied by `EMSDK` directly:
 

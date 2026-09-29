@@ -22,6 +22,10 @@ if(EMSCRIPTEN OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     # Emscripten Build (PDCursesMod SDL2)
     include(FetchContent)
 
+    set(WEB_DIST_DIR "${CMAKE_BINARY_DIR}/site")
+    set(WEB_SHELL_FILE "${CMAKE_SOURCE_DIR}/web/src/index.html")
+    set(WEB_STYLE_FILE "${CMAKE_SOURCE_DIR}/web/src/style.css")
+
     set(CMAKE_INSTALL_PREFIX
         "${CMAKE_BINARY_DIR}/install"
         CACHE PATH "Local install prefix" FORCE
@@ -68,8 +72,22 @@ if(EMSCRIPTEN OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     target_link_options(AsciiDonut PRIVATE
         -sUSE_SDL=2
         -sALLOW_MEMORY_GROWTH=1
+        "--shell-file=${WEB_SHELL_FILE}"
     )
-    set_target_properties(AsciiDonut PROPERTIES SUFFIX ".html")
+    set_target_properties(AsciiDonut PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${WEB_DIST_DIR}"
+        OUTPUT_NAME "index"
+        SUFFIX ".html"
+    )
+    set_property(TARGET AsciiDonut APPEND PROPERTY LINK_DEPENDS
+        "${WEB_SHELL_FILE}"
+    )
+    add_custom_target(AsciiDonutWebAssets ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${WEB_STYLE_FILE}"
+            "${WEB_DIST_DIR}/style.css"
+    )
+    add_dependencies(AsciiDonut AsciiDonutWebAssets)
 
 elseif(WIN32)
     # Native Windows Build (PDCursesMod Win32 Console)
