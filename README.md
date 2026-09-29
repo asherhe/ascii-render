@@ -14,6 +14,7 @@ A terminal ASCII 3D renderer.
 - A Curses implementation and its development files (`ncurses` on most Linux and macOS systems, PDCurses on Windows)
 - Python 3
 - [uv](https://docs.astral.sh/uv/) (used by CMake to create the Python virtual environment)
+- Emscripten (if building for web)
 
 ## Setup and build
 

@@ -17,8 +17,38 @@ set_target_properties(AsciiDonut PROPERTIES
 
 # ==============================================================================
 # Curses Platform Selection
-# ==============================================================================
-if(WIN32)
+# ============================================================================== 
+if(EMSCRIPTEN OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    # Emscripten Build (PDCursesMod SDL2)
+    include(FetchContent)
+
+    set(CMAKE_INSTALL_PREFIX
+        "${CMAKE_BINARY_DIR}/install"
+        CACHE PATH "Local install prefix" FORCE
+    )
+    set(PDC_BUILD_SHARED OFF CACHE BOOL "Build static PDCurses libraries" FORCE)
+    set(PDC_SDL2_BUILD ON CACHE BOOL "Build SDL2 project" FORCE)
+    set(PDC_SDL2_DEPS_BUILD OFF CACHE BOOL "Use Emscripten's SDL2 port" FORCE)
+    set(PDC_GL_BUILD OFF CACHE BOOL "Build OpenGL project" FORCE)
+    set(PDC_WIDE OFF CACHE BOOL "Build narrow-character PDCurses" FORCE)
+
+    FetchContent_Declare(
+        pdcursesmod
+        GIT_REPOSITORY https://github.com/Bill-Gray/PDCursesMod.git
+        GIT_TAG        master
+    )
+    FetchContent_MakeAvailable(pdcursesmod)
+
+    target_link_libraries(AsciiDonut PRIVATE sdl2_pdcurses)
+    target_include_directories(AsciiDonut PRIVATE ${pdcursesmod_SOURCE_DIR})
+    target_compile_options(AsciiDonut PRIVATE -sUSE_SDL=2)
+    target_link_options(AsciiDonut PRIVATE
+        -sUSE_SDL=2
+        -sALLOW_MEMORY_GROWTH=1
+    )
+    set_target_properties(AsciiDonut PROPERTIES SUFFIX ".html")
+
+elseif(WIN32)
     # Native Windows Build (PDCursesMod Win32 Console)
     include(FetchContent)
 
