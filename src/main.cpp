@@ -39,11 +39,11 @@ void sync_canvas_size() {
 }
 
 void sync_curses_size() {
-  double width, height;
-  emscripten_get_element_css_size("#canvas", &width, &height);
+  int width, height;
+  emscripten_get_canvas_element_size("#canvas", &width, &height);
 
-  int rows = static_cast<int>(height) / pdc_fheight;
-  int cols = static_cast<int>(width) / pdc_fwidth;
+  int rows = height / pdc_fheight;
+  int cols = width / pdc_fwidth;
   rows = rows > 0 ? rows : 1;
   cols = cols > 0 ? cols : 1;
   int current_rows, current_cols;
@@ -58,6 +58,9 @@ void sync_curses_size() {
 void init_curses() {
 #ifdef __EMSCRIPTEN__
   sync_canvas_size();
+#endif
+#ifdef __EMSCRIPTEN__
+  pdc_sdl_render_mode = PDC_SDL_RENDER_SOLID;
 #endif
   // ncurses initialization
   initscr();
