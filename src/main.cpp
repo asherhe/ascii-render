@@ -71,12 +71,18 @@ void render_frame(App &app) {
     }
   }
 
-#ifndef __EMSCRIPTEN__
   // display help text
   int centerX = max_cols / 2;
-  std::string title = " (Press 'q' to quit) ";
-  mvprintw(max_rows - 1, centerX - (title.length() / 2), "%s", title.c_str());
+  std::string title = "";
+
+// quitting is not an option in web
+#ifndef __EMSCRIPTEN__
+  title = " (Press 'q' to quit) ";
 #endif
+
+  if (app.paused)
+    title = " (PAUSED) ";
+  mvprintw(max_rows - 1, centerX - (title.length() / 2), "%s", title.c_str());
 
   // flush the off-screen buffer to terminal screen at once
   refresh();
